@@ -1,0 +1,7 @@
+caller_name,caller_phone,receiver_name,receiver_phone,location,call_type,duration_seconds,notes
+Rahul Sharma,+919876501001,Aman Verma,+919876502002,Pune,Encrypted Voice,340,Discussion about shipment arrival
+Rahul Sharma,+919876501001,Vikram Malhotra,+919876503003,Mumbai,Cellular,180,Payment clearance confirmation
+Sameer Khan,+919876503003,Rahul Sharma,+919876501001,Goa,Voice,95,Security arrangement report
+Devendra Joshi,+919876502002,Priya Nair,+919876504004,Mumbai,Cellular,210,Hawala batch receipt
+Aman Verma,+919876502002,Rohan Mehta,+919876505005,Pune,SMS,0,Safehouse keys handed over
+
