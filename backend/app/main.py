@@ -50,13 +50,15 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS Middleware
+# CORS Middleware - Enforce configured origins with credentials support
+# In production on Vercel, set CORS_ORIGINS=https://your-app.vercel.app in backend environment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    allow_origin_regex=r"https://.*\.vercel\.app" if "vercel.app" in settings.CORS_ORIGINS else None,
 )
 
 # Mount local media directory for evidence storage fallback
