@@ -1,25 +1,53 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Lock, Mail, AlertCircle, ArrowRight, Radio } from 'lucide-react';
+import {
+  Shield,
+  Lock,
+  Mail,
+  AlertCircle,
+  ArrowRight,
+  Radio,
+  Eye,
+  EyeOff,
+  HelpCircle,
+  X,
+  CheckCircle2,
+} from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
   const { login, demoLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [showForgotModal, setShowForgotModal] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      setErrorMsg('Please enter both your email address and password.');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg(null);
     try {
-      await login(email, password);
+      await login(email.trim(), password);
       navigate('/');
     } catch (err) {
-      setErrorMsg(err.response?.data?.detail || 'Authentication failed. Verify credentials.');
+      const detail = err.response?.data?.detail;
+      if (typeof detail === 'string') {
+        setErrorMsg(detail);
+      } else if (Array.isArray(detail)) {
+        setErrorMsg(detail.map((d) => d.msg || d).join(', '));
+      } else if (err.message && err.message.includes('Network Error')) {
+        setErrorMsg('Network error: Unable to connect to the authentication server. Please verify backend connectivity.');
+      } else {
+        setErrorMsg('Authentication failed. Please verify your credentials or network status.');
+      }
     } finally {
       setLoading(false);
     }
@@ -32,7 +60,8 @@ const Login = () => {
       await demoLogin(role);
       navigate('/');
     } catch (err) {
-      setErrorMsg(err.response?.data?.detail || 'Demo login failed.');
+      const detail = err.response?.data?.detail;
+      setErrorMsg(typeof detail === 'string' ? detail : 'Demo login failed. Ensure the server is online.');
     } finally {
       setLoading(false);
     }
@@ -40,7 +69,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-intel-950 relative overflow-hidden">
-      {/* Subtle background glow */}
+      {/* Background radial glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md bg-intel-900 border border-intel-800 rounded-2xl p-8 shadow-2xl relative z-10 space-y-6">
@@ -64,9 +93,16 @@ const Login = () => {
         </div>
 
         {errorMsg && (
-          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center space-x-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{errorMsg}</span>
+          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-start space-x-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 font-mono">{errorMsg}</div>
+            <button
+              type="button"
+              onClick={() => setErrorMsg(null)}
+              className="text-red-400 hover:text-red-300 ml-1"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
 
@@ -88,17 +124,35 @@ const Login = () => {
           </div>
 
           <div>
-            <label className="text-slate-300 block mb-1 font-medium">Access Password:</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-slate-300 font-medium">Access Password:</label>
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(true)}
+                className="text-[11px] text-cyan-400/80 hover:text-cyan-300 transition-colors font-mono"
+              >
+                Forgot Password?
+              </button>
+            </div>
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-intel-950 border border-intel-800 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono"
+                className="w-full pl-9 pr-10 py-2.5 bg-intel-950 border border-intel-800 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono"
               />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
@@ -111,6 +165,19 @@ const Login = () => {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
+
+        {/* Link to Signup */}
+        <div className="text-center pt-1 pb-1">
+          <p className="text-xs text-slate-400">
+            Don't have an investigator account?{' '}
+            <Link
+              to="/signup"
+              className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 ml-1"
+            >
+              Sign Up
+            </Link>
+          </p>
+        </div>
 
         {/* Quick Demo Logins */}
         <div className="pt-4 border-t border-intel-800 space-y-2.5">
@@ -146,9 +213,43 @@ const Login = () => {
           AUTHORIZED PERSONNEL ONLY · 256-BIT ENCRYPTION
         </div>
       </div>
+
+      {/* Forgot Password Security Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm bg-intel-900 border border-intel-750 rounded-xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center space-x-2 text-cyan-400">
+                <HelpCircle className="w-5 h-5" />
+                <h3 className="font-bold text-sm text-slate-100">Password Recovery Notice</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(false)}
+                className="text-slate-400 hover:text-slate-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Under CRIMENET operational security protocols, password resets cannot be performed via unauthenticated public channels.
+            </p>
+            <div className="p-3 bg-intel-950 border border-intel-800 rounded-lg text-[11px] text-slate-400 font-mono space-y-1">
+              <div>• Contact your system Administrator / Director.</div>
+              <div>• Request a password rotation from the Admin Console.</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowForgotModal(false)}
+              className="w-full py-2 bg-intel-800 hover:bg-intel-750 text-slate-200 text-xs font-semibold rounded-lg transition-colors"
+            >
+              Acknowledged
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Login;
-

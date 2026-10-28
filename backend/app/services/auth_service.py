@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from app.database.mongodb import mongo_client
-from app.models.schemas import TokenData, UserCreate, UserResponse, UserRole
+from app.models.schemas import TokenData, UserCreate, UserRegister, UserResponse, UserRole
 from app.utils.config import settings
 from app.utils.logger import get_logger
 
@@ -48,15 +48,39 @@ class AuthService:
         user_id = f"usr_{uuid.uuid4().hex[:8]}"
         user_doc = {
             "id": user_id,
-            "email": user_in.email.lower(),
-            "full_name": user_in.full_name,
-            "badge_number": user_in.badge_number,
+            "email": user_in.email.lower().strip(),
+            "full_name": user_in.full_name.strip(),
+            "badge_number": user_in.badge_number.strip() if user_in.badge_number else None,
             "role": user_in.role.value,
             "hashed_password": get_password_hash(user_in.password),
             "is_active": user_in.is_active,
             "created_at": datetime.now(timezone.utc)
         }
         await mongo_client.users.insert_one(user_doc)
+        return UserResponse(**user_doc)
+
+    @staticmethod
+    async def register_public_user(user_in: UserRegister) -> UserResponse:
+        """Self-registration for public users. Strictly enforces least-privileged INVESTIGATOR role."""
+        existing = await AuthService.get_user_by_email(user_in.email)
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A user with this email address already exists."
+            )
+        user_id = f"usr_{uuid.uuid4().hex[:8]}"
+        user_doc = {
+            "id": user_id,
+            "email": user_in.email.lower().strip(),
+            "full_name": user_in.full_name.strip(),
+            "badge_number": user_in.badge_number.strip() if user_in.badge_number else None,
+            "role": UserRole.INVESTIGATOR.value,
+            "hashed_password": get_password_hash(user_in.password),
+            "is_active": True,
+            "created_at": datetime.now(timezone.utc)
+        }
+        await mongo_client.users.insert_one(user_doc)
+        logger.info(f"New investigator account registered: {user_doc['email']}")
         return UserResponse(**user_doc)
 
     @staticmethod
@@ -71,20 +95,24 @@ class AuthService:
     @staticmethod
     async def seed_default_users():
         """Seeds standard Admin and Investigator accounts if not present."""
-        admin = await AuthService.get_user_by_email("admin@intelligence.gov")
+        admin_email = (getattr(settings, "INITIAL_ADMIN_EMAIL", None) or "admin@intelligence.gov").lower().strip()
+        admin_pw = getattr(settings, "INITIAL_ADMIN_PASSWORD", None) or "Admin@123"
+        admin_name = getattr(settings, "INITIAL_ADMIN_NAME", None) or "Chief Director Admin"
+
+        admin = await AuthService.get_user_by_email(admin_email)
         if not admin:
             admin_doc = {
                 "id": "usr_admin01",
-                "email": "admin@intelligence.gov",
-                "full_name": "Chief Director Admin",
+                "email": admin_email,
+                "full_name": admin_name,
                 "badge_number": "DIR-001",
                 "role": UserRole.ADMIN.value,
-                "hashed_password": get_password_hash("Admin@123"),
+                "hashed_password": get_password_hash(admin_pw),
                 "is_active": True,
                 "created_at": datetime.now(timezone.utc)
             }
             await mongo_client.users.insert_one(admin_doc)
-            logger.info("Default Admin account seeded: admin@intelligence.gov / Admin@123")
+            logger.info(f"Default Admin account seeded: {admin_email}")
 
         inv = await AuthService.get_user_by_email("investigator@intelligence.gov")
         if not inv:

@@ -1,6 +1,6 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.models.schemas import TokenResponse, UserCreate, UserLogin, UserResponse
+from app.models.schemas import TokenResponse, UserCreate, UserLogin, UserRegister, UserResponse
 from app.services.auth_service import (
     AuthService,
     create_access_token,
@@ -43,11 +43,28 @@ async def get_current_user_profile(current_user: UserResponse = Depends(get_curr
     return current_user
 
 
-@router.post("/register", response_model=UserResponse)
-async def register_user(
-    user_in: UserCreate,
-    current_admin: UserResponse = Depends(require_admin)
-):
-    """Admin-only endpoint to create new investigator or admin accounts."""
-    return await AuthService.create_user(user_in)
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+async def register(user_in: UserRegister):
+    """
+    Public self-registration for investigators.
+    Enforces least-privileged INVESTIGATOR role to prevent privilege escalation.
+    Returns session JWT token and user profile for immediate terminal access.
+    """
+    # Enforce password strength minimums
+    if len(user_in.password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters long."
+        )
+    if not any(c.isdigit() for c in user_in.password) or not any(c.isalpha() for c in user_in.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must contain both letters and at least one number."
+        )
+
+    created_user = await AuthService.register_public_user(user_in)
+    token = create_access_token(data={"sub": created_user.email, "role": created_user.role.value})
+    return TokenResponse(access_token=token, user=created_user)
+
 

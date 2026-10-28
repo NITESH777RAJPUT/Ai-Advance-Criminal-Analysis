@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
 
+    # Initial Admin Provisioning (Auto-seeded if users collection is empty)
+    INITIAL_ADMIN_EMAIL: str = "admin@intelligence.gov"
+    INITIAL_ADMIN_PASSWORD: str = "Admin@123"
+    INITIAL_ADMIN_NAME: str = "Chief Director Admin"
+
     # CORS
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174"
 

@@ -41,6 +41,17 @@ export const AuthProvider = ({ children }) => {
     return res.user;
   };
 
+  const signup = async (userData) => {
+    const res = await authApi.signup(userData);
+    if (res?.access_token && res?.user) {
+      setToken(res.access_token);
+      setUser(res.user);
+      localStorage.setItem('intel_auth_token', res.access_token);
+      localStorage.setItem('intel_user_profile', JSON.stringify(res.user));
+    }
+    return res;
+  };
+
   const logout = async () => {
     try {
       await authApi.logout();
@@ -75,6 +86,7 @@ export const AuthProvider = ({ children }) => {
         isAdmin,
         isInvestigator,
         login,
+        signup,
         logout,
         demoLogin,
       }}

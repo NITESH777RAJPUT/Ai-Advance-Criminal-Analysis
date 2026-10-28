@@ -11,6 +11,7 @@ import AlertCenter from './pages/AlertCenter';
 import ReportGenerator from './pages/ReportGenerator';
 import AdminManagement from './pages/AdminManagement';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 const ProtectedLayout = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -63,6 +64,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/register" element={<Navigate to="/signup" replace />} />
           <Route path="/*" element={<ProtectedLayout />} />
         </Routes>
       </BrowserRouter>

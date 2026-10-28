@@ -62,6 +62,10 @@ export const authApi = {
     const res = await api.post('/auth/register', userData);
     return res.data;
   },
+  signup: async (userData) => {
+    const res = await api.post('/auth/register', userData);
+    return res.data;
+  },
 };
 
 export const uploadApi = {

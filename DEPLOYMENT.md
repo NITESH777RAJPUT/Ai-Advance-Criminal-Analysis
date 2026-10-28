@@ -60,6 +60,9 @@ This guide describes how to deploy the **CRIMENET AI-Powered Criminal Network An
    | `JWT_ALGORITHM` | `HS256` | Yes |
    | `ACCESS_TOKEN_EXPIRE_MINUTES` | `480` | Yes |
    | `CORS_ORIGINS` | `https://your-crimenet-app.vercel.app` *(update once Vercel URL is known)* | Yes |
+   | `INITIAL_ADMIN_EMAIL` | `admin@intelligence.gov` *(or your custom secure admin email)* | Optional |
+   | `INITIAL_ADMIN_PASSWORD` | `Admin@123` *(or your custom secure admin password)* | Optional |
+   | `INITIAL_ADMIN_NAME` | `Chief Director Admin` | Optional |
    | `MONGODB_URI` | `mongodb+srv://user:pass@cluster.mongodb.net/criminal_intelligence?retryWrites=true&w=majority` | Yes (or fallback) |
    | `NEO4J_URI` | `neo4j+s://<dbid>.databases.neo4j.io` | Yes (or fallback) |
    | `NEO4J_USERNAME` | `neo4j` | Yes |
@@ -111,7 +114,32 @@ This guide describes how to deploy the **CRIMENET AI-Powered Criminal Network An
 
 ---
 
-## Step 4: Verification & Smoke Test
+## Step 4: First-Time Admin Provisioning & Auth Setup
+
+CRIMENET provides two secure, non-hardcoded methods to provision your initial Administrator account:
+
+### Method A: Automated Seeding via Environment Variables (Recommended for Render)
+Set the following environment variables in your Render backend service:
+- `INITIAL_ADMIN_EMAIL`: e.g. `director@agency.gov`
+- `INITIAL_ADMIN_PASSWORD`: e.g. `YourStrongPassword@2026`
+- `INITIAL_ADMIN_NAME`: e.g. `Chief Operations Director`
+
+On initial startup, CRIMENET automatically and idempotently creates this administrator account with full privileges if it does not already exist.
+
+### Method B: Standalone Admin CLI Script
+Run the provisioning script in the Render Shell (or locally):
+```bash
+python -m app.scripts.create_admin --email admin@intelligence.gov --password "Admin@123" --name "Chief Director Admin"
+```
+
+### Self-Service Registration for Field Investigators
+- Public registrations via `/signup` or `POST /api/auth/register` automatically receive the least-privileged **`investigator`** role.
+- Self-registration cannot elevate privileges to `admin`.
+- Only existing Administrators can promote users or create new Administrators via the Admin Console (`/admin` or `POST /api/admin/users`).
+
+---
+
+## Step 5: Verification & Smoke Test
 
 1. Open your Vercel URL in your browser: `https://crimenet-production.vercel.app`.
 2. Verify direct SPA navigation: refresh the page on `/network` or `/alerts` — verify it loads without `404 Not Found` (guaranteed by `vercel.json` rewrite).
