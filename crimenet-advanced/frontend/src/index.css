@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-intel-950 text-slate-100;
+    @apply bg-intel-950 text-slate-100 selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden;
+  }
+}
+
+/* Cyber Intelligence Glassmorphism */
+.glass-panel {
+  background: rgba(7, 13, 24, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(6, 182, 212, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(3, 6, 10, 0.6);
+}
+
+.glass-panel-glow {
+  background: rgba(11, 20, 36, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.25), 0 12px 40px rgba(0, 0, 0, 0.75);
+}
+
+.glass-panel-purple {
+  background: rgba(15, 12, 28, 0.85);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  box-shadow: 0 0 20px -3px rgba(168, 85, 247, 0.25);
+}
+
+/* Radar Scanline Effect */
+.radar-grid {
+  background-image: 
+    linear-gradient(rgba(6, 182, 212, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b111a;
+  background: #070d18;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1b2b40;
+  border-radius: 3px;
+  background: #182742;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334e70;
+  background: #06b6d4;
+}
+
+/* React Flow custom styling */
+.react-flow__pane {
+  cursor: grab;
+}
+
+.react-flow__pane:active {
+  cursor: grabbing;
+}
+
+.react-flow__node {
+  border-radius: 12px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.react-flow__node:hover {
+  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.02);
+  z-index: 50 !important;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2.2;
+  stroke-width: 2;
+  transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #06b6d4 !important;
+  stroke-width: 3.5;
+  stroke: #00f5ff !important;
+  stroke-width: 3.8;
+  filter: drop-shadow(0 0 6px rgba(0, 245, 255, 0.8));
+}
+
+.react-flow__controls {
+  border-radius: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+.react-flow__controls button {
+  background: #0f1724;
+  border-bottom: 1px solid #1b2b40;
+  background: #0b1424;
+  border-bottom: 1px solid #182742;
+  color: #94a3b8;
+  transition: all 0.15s ease;
+}
+
+.react-flow__controls button:hover {
+  background: #1b2b40;
+  color: #06b6d4;
+  background: #182742;
+  color: #00f5ff;
+}
+
+/* Node Glow Variations */
+.node-critical-glow {
+  box-shadow: 0 0 24px -2px rgba(239, 68, 68, 0.75), inset 0 0 12px rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.85) !important;
+}
+
+.node-high-glow {
+  box-shadow: 0 0 18px -2px rgba(249, 115, 22, 0.6), inset 0 0 8px rgba(249, 115, 22, 0.15);
+  border-color: rgba(249, 115, 22, 0.8) !important;
+}
+
+.node-medium-glow {
+  box-shadow: 0 0 14px -3px rgba(234, 179, 8, 0.45);
+  border-color: rgba(234, 179, 8, 0.65) !important;
+}
+
+.node-low-glow {
+  box-shadow: 0 0 12px -3px rgba(16, 185, 129, 0.35);
+  border-color: rgba(16, 185, 129, 0.5) !important;
+}
+
+/* Influential Pulsing Halo */
+.node-pulsing-halo::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 16px;
+  border: 2px solid rgba(6, 182, 212, 0.7);
+  animation: haloPulse 2.4s infinite ease-out;
+  pointer-events: none;
+}
+
+.node-pulsing-halo-purple::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 16px;
+  border: 2px solid rgba(168, 85, 247, 0.7);
+  animation: haloPulse 2.4s infinite ease-out;
+  pointer-events: none;
+}
+
+

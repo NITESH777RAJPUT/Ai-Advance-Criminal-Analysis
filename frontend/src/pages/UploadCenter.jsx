@@ -362,17 +362,29 @@ const UploadCenter = () => {
                       {extractionResult.extraction.relationships.map((rel, idx) => (
                         <div
                           key={idx}
-                          className="p-2 rounded bg-intel-950 border border-intel-800 text-xs flex items-center justify-between"
+                          className="p-2.5 rounded bg-intel-950 border border-intel-800 text-xs flex flex-col space-y-1.5"
                         >
-                          <div className="flex items-center space-x-2 font-mono text-[11px]">
-                            <span className="text-slate-200 font-semibold">{rel.source}</span>
-                            <ArrowRight className="w-3 h-3 text-cyan-400" />
-                            <span className="px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 text-[9px] font-bold">
-                              {rel.relationship_type}
-                            </span>
-                            <ArrowRight className="w-3 h-3 text-cyan-400" />
-                            <span className="text-slate-200 font-semibold">{rel.target}</span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 font-mono text-[11px]">
+                              <span className="text-slate-200 font-semibold">{rel.source}</span>
+                              <ArrowRight className="w-3 h-3 text-cyan-400" />
+                              <span className="px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 text-[9px] font-bold">
+                                {rel.relationship_type}
+                              </span>
+                              <ArrowRight className="w-3 h-3 text-cyan-400" />
+                              <span className="text-slate-200 font-semibold">{rel.target}</span>
+                            </div>
+                            {rel.extraction_method && (
+                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                                {rel.extraction_method}
+                              </span>
+                            )}
                           </div>
+                          {rel.source_snippet && (
+                            <div className="text-[10px] text-slate-400 font-mono italic bg-intel-900/60 p-1.5 rounded border border-intel-850">
+                              "{rel.source_snippet}"
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

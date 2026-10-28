@@ -1,319 +1,481 @@
-# AI-Powered Criminal Network Analysis System (CRIMENET)
+# 🕵️ CRIMENET — AI-Powered Criminal Network Analysis System
 
-A production-grade, tactical intelligence platform designed for law enforcement and intelligence agencies to ingest crime-related records, extract named entities and operational relationships via **spaCy NLP**, model multi-layer criminal networks in **Neo4j**, persist cases and forensic media in **MongoDB** and **Cloudinary**, run graph centrality and risk algorithms, flag suspicious syndicate patterns, and generate downloadable intelligence PDF dossiers.
+**Transforming complex crime-related data into actionable network intelligence.**
+
+CRIMENET is an AI-powered criminal network analysis platform designed to help investigators analyze crime-related records, discover relationships between entities, visualize interconnected networks, identify suspicious patterns, and generate structured intelligence reports.
+
+The platform combines Natural Language Processing (NLP), graph databases, network analytics, and interactive visualization to support data-driven investigative workflows.
+
+> **Disclaimer:** CRIMENET is a research and decision-support project. Its automated findings are investigative leads, not proof of criminal activity. All results require human verification.
 
 ---
 
-## Architecture Overview
+## 📌 Table of Contents
 
+- Overview
+- Key Features
+- Technology Stack
+- System Architecture
+- Project Structure
+- Prerequisites
+- Installation & Setup
+- Environment Configuration
+- API Documentation
+- Security Considerations
+- Future Enhancements
+- Contributing
+- License
+
+---
+
+## 🚀 Overview
+
+Crime investigations can involve large amounts of unstructured documents, call records, reports, and interconnected entities. Manually identifying relationships across these sources can be time-consuming.
+
+CRIMENET provides a unified platform to:
+
+- Extract entities and potential relationships from crime-related text.
+- Represent entities and their connections using graph structures.
+- Analyze network connectivity and relationship patterns.
+- Flag potentially suspicious patterns for further investigation.
+- Explore networks through an interactive graph interface.
+- Generate downloadable PDF intelligence reports.
+
+The system is designed with a modular architecture so that its frontend, backend, NLP engine, analytics services, and databases can be maintained independently.
+
+## ✨ Key Features
+
+### 1. 📂 Multi-Format Evidence Ingestion
+
+Process supported investigation data, including:
+
+- PDF documents and FIR reports.
+- CSV files containing structured call records.
+- JSON intelligence feeds.
+- Raw text statements.
+- Image evidence through supported cloud-storage integrations.
+
+### 2. 🧠 NLP-Based Entity Extraction
+
+Uses spaCy and rule-based processing to identify relevant entities, such as:
+
+- Persons
+- Locations
+- Organizations
+- Phone numbers
+- Vehicles
+
+Extracted information can be used to identify potential relationships between entities. Extraction accuracy depends on the input data, language, document quality, and configured processing rules.
+
+### 3. 🕸️ Criminal Network Visualization
+
+Explore interconnected entities through an interactive graph interface.
+
+- Interactive nodes and relationship edges.
+- Zoom, pan, and graph navigation.
+- Entity inspection and relationship exploration.
+- Filtering by entity type and risk indicators.
+- Shortest-path exploration between selected entities.
+
+### 4. 📊 Network Intelligence & Analytics
+
+The analytics layer supports graph-based investigation using:
+
+- Degree centrality.
+- Betweenness centrality.
+- Shortest-path analysis.
+- Community detection.
+- Relationship and co-occurrence analysis.
+- Configurable entity risk scores.
+
+Graph metrics describe structural patterns in a network. They do not independently establish criminal intent or guilt.
+
+### 5. 🚨 Suspicious Pattern Detection
+
+Configurable detection rules can flag patterns such as:
+
+- Shared phone numbers among multiple entities.
+- Multiple targets associated with a common location.
+- Densely interconnected groups.
+- Repeated interactions across different communication or transaction channels.
+
+Alerts are intended to prioritize human review. A shared connection or unusual pattern may have a legitimate explanation.
+
+### 6. 📑 PDF Intelligence Reports
+
+Generate structured PDF reports containing supported investigation information, including:
+
+- Entity profiles.
+- Associated entities and relationships.
+- Network and risk indicators.
+- Relevant locations and assets.
+- Investigator notes and summaries.
+
+### 7. 🔐 Authentication & Access Control
+
+The platform includes authentication and role-based access control capabilities for administrative and investigator workflows.
+
+Access permissions, session handling, and authorization rules should be configured and validated before deployment in any real investigative environment.
+
+---
+
+## 🛠️ Technology Stack
+
+| Component | Technology |
+|---|---|
+| Frontend | React, Vite, JavaScript |
+| Styling | Tailwind CSS |
+| Graph Visualization | React Flow |
+| API Client | Axios |
+| Backend | Python, FastAPI |
+| NLP | spaCy |
+| Graph Database | Neo4j |
+| Document Database | MongoDB |
+| Graph Analytics | NetworkX |
+| Authentication | JWT |
+| Image Storage | Cloudinary |
+| PDF Generation | ReportLab |
+| Testing | Pytest |
+
+---
+
+## 🏗️ System Architecture
+
+```text
+┌─────────────────────────────────────┐
+│          React Frontend             │
+│ Dashboard · Graph · Alerts · Reports│
+└──────────────────┬──────────────────┘
+                   │ REST API
+                   ▼
+┌─────────────────────────────────────┐
+│           FastAPI Backend           │
+│ Authentication · API · Validation   │
+└──────────────────┬──────────────────┘
+                   │
+          ┌────────┴─────────┐
+          ▼                  ▼
+┌──────────────────┐ ┌──────────────────┐
+│   NLP Pipeline   │ │  Graph Analytics  │
+│      spaCy       │ │    NetworkX       │
+└────────┬─────────┘ └────────┬─────────┘
+         └──────────┬─────────┘
+                    ▼
+          ┌───────────────────┐
+          │   Neo4j Graph DB  │
+          │ Entities & Links  │
+          └───────────────────┘
+
+          ┌───────────────────┐
+          │    MongoDB        │
+          │ Cases, Users, Logs│
+          └───────────────────┘
 ```
-+---------------------------------------------------------------------------------------+
-|                                  React 18 + Vite UI                                   |
-|  - Tactical Dark Theme (Tailwind CSS)          - Interactive React Flow Canvas        |
-|  - Role-Based Access Control (Admin / Inv)     - Live NLP Ingestion Feedback          |
-|  - Rule Alert Center & Incident Triage         - PDF Intelligence Dossier Downloader  |
-+-------------------------------------------+-------------------------------------------+
-                                            | REST API (Axios / Bearer JWT)
-                                            v
-+---------------------------------------------------------------------------------------+
-|                                    FastAPI Backend                                    |
-|  +--------------------+  +--------------------+  +---------------------------------+  |
-|  | Auth Service (JWT) |  | Upload Engine      |  | spaCy NLP Extraction Engine     |  |
-|  | Role Guards (RBAC) |  | (PDF/CSV/JSON/IMG) |  | - NER: Person, Loc, Org, Phone  |  |
-|  +--------------------+  +--------------------+  +---------------------------------+  |
-|  +--------------------+  +--------------------+  +---------------------------------+  |
-|  | Graph Service      |  | Network Analytics  |  | Suspicious Detection Engine     |  |
-|  | Neo4j & NetworkX   |  | Centrality & Paths |  | 4 Rule Policies & Triage       |  |
-|  +--------------------+  +--------------------+  +---------------------------------+  |
-|  +--------------------------------------------------------------------------------+  |
-|  | ReportLab PDF Dossier Generator (Formal Law Enforcement Layout)                 |  |
-+------------------------------------+--------------------------------------------------+
-                                     |
-             +-----------------------+-----------------------+
-             v                                               v
-+-------------------------+                     +-------------------------+
-|     MongoDB Database    |                     |     Neo4j Database      |
-| - Users & Credentials   |                     | - Nodes:                |
-| - Cases & FIR Documents |                     |   Person, Location,     |
-| - Upload Audit History  |                     |   Vehicle, Phone Number,|
-| - Cloudinary Image URLs |                     |   Organization          |
-| - Alert Records         |                     | - Relationships:        |
-| - Generation Audit Trail|                     |   CALLED, VISITED, OWNS,|
-+-------------------------+                     |   ASSOCIATED_WITH,      |
-                                                |   TRANSACTED_WITH,      |
-                                                |   WORKS_FOR, LOCATED_AT |
-                                                +-------------------------+
+
+The frontend communicates with the backend through REST APIs. The backend coordinates document processing, entity extraction, graph operations, analytics, alert generation, and report creation.
+
+Neo4j stores graph relationships, while MongoDB stores supported application records and metadata.
+
+---
+
+## 📁 Project Structure
+
+```text
+CRIMENET/
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── context/
+│   │   ├── services/
+│   │   ├── hooks/
+│   │   ├── utils/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── core/
+│   │   ├── database/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   ├── algorithms/
+│   │   └── main.py
+│   ├── tests/
+│   └── requirements.txt
+│
+├── data/
+│   └── samples/
+├── docs/
+├── scripts/
+├── .github/
+├── .env.example
+├── .gitignore
+├── docker-compose.yml
+└── README.md
 ```
 
----
-
-## Key Features
-
-1. **Multi-Format Evidence Ingestion**:
-   - Ingest **PDF FIR documents**, **CSV call records (CDR)**, **JSON crime feeds**, and raw statement texts.
-   - Cloudinary integration for surveillance photos and suspect mugshots with MongoDB secure URL indexing.
-
-2. **spaCy NLP Processing & Linguistic Parsing**:
-   - Named Entity Recognition (NER) augmented with dependency parsing (`nsubj`, `dobj`) and gazetteer patterns for:
-     - Person Names
-     - Locations & Safehouses
-     - Organizations & Shell Fronts
-     - Phone Numbers (International & local formats)
-     - Vehicles (License plates, vehicle models)
-   - Automatic relationship classification (`CALLED`, `VISITED`, `OWNS`, `TRANSACTED_WITH`, `WORKS_FOR`, `LOCATED_AT`, `ASSOCIATED_WITH`).
-
-3. **Neo4j Criminal Graph Builder**:
-   - Directed multi-relational graph modeling with Cypher queries.
-   - Built-in transparent **NetworkX in-memory graph fallback** so the platform runs immediately out-of-the-box even before Neo4j or MongoDB instances are booted.
-
-4. **Network Intelligence & Centrality Analytics**:
-   - Degree Centrality & Brokerage / Betweenness Centrality calculation.
-   - Most Connected Individual identification (facilitators vs. kingpins).
-   - Hidden Relationship Discovery (co-occurrence inference linking unconnected suspects via shared burner phones or safehouses).
-   - Shortest Connection Path Tracer between any two criminal entities.
-   - Community Detection (modularity clustering isolating syndicate sub-cells).
-   - Composite Threat Risk Score (0 - 100) dynamically assigned to every node.
-
-5. **Rule-Based Suspicious Activity Detection**:
-   - **Rule 1: Burner Phone Sharing** — Flags single phone numbers linked to $\ge 2$ suspects.
-   - **Rule 2: Safehouse Co-location** — Flags venues visited by $\ge 2$ targets.
-   - **Rule 3: Syndicate Cell Density** — Detects tightly meshed multi-suspect cliques.
-   - **Rule 4: Multi-Channel Interactions** — Flags repeated cross-cutting calls and wire transactions.
-
-6. **Interactive React Flow Canvas**:
-   - Custom nodes with color-coded risk rings and type-specific badges.
-   - Zoom, pan, minimap, fit view, and type/risk filter controls.
-   - Path discovery highlighting shortest connection chains in glowing cyan.
-   - Slide-out Node Inspection Drawer.
-
-7. **Downloadable PDF Intelligence Dossier**:
-   - Formal law-enforcement formatting generated using **ReportLab**.
-   - Includes suspect profile, risk gauges, associated contacts table, safehouses, logistical assets, and investigator briefing notes.
+*This is the recommended logical structure. Adapt it to the files and modules actually present in your repository.*
 
 ---
 
-## Default System Credentials
+## ⚙️ Prerequisites
 
-| Role | Email | Password | Access Capabilities |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@intelligence.gov` | `Admin@123` | Full system governance, user creation, deactivation, audit logs, demo data reload |
-| **Investigator** | `investigator@intelligence.gov` | `Investigator@123` | Evidence upload, NLP extraction, network canvas, alert triage, PDF report generation |
+Install the following before starting:
 
-*Both profiles are available as one-click login buttons on the login screen.*
+- Python 3.12 or a compatible version supported by the project's dependencies.
+- Node.js 18+ and npm.
+- Git.
+- MongoDB, if using the MongoDB integration.
+- Neo4j, if using the Neo4j graph database.
+- Cloudinary credentials, if using cloud-based image storage.
 
----
+Check your installed versions:
 
-## Quick Start Guide
+```bash
+python --version
+node --version
+npm --version
+git --version
+```
 
-### 1. Prerequisites
-- **Python 3.12+**
-- **Node.js 18+** & **npm**
-- *(Optional)* MongoDB running on `localhost:27017`
-- *(Optional)* Neo4j running on `localhost:7687`
+## 💻 Installation & Setup
 
-> **Note**: If MongoDB or Neo4j are not running locally, the system automatically activates its built-in in-memory document store and NetworkX graph engine so all features, calculations, and visualizations work immediately.
+### 1. Clone the Repository
 
----
+```bash
+git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+cd YOUR_REPOSITORY
+```
 
-### 2. Backend Setup
+Replace the repository URL with your actual GitHub repository URL.
+
+### 2. Configure the Backend
 
 ```bash
 cd backend
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Download the spaCy NLP language model
-python -m spacy download en_core_web_sm
-
-# Configure environment variables (copy template)
-cp .env.example .env
-
-# Run automated tests
-python -m pytest tests/test_backend.py -v
-
-# Start FastAPI server
-uvicorn app.main:app --reload --port 8000
+python -m venv .venv
 ```
 
-The backend is now live:
-- API Base: `http://localhost:8000/api`
-- Interactive Swagger UI: `http://localhost:8000/docs`
-- Health Telemetry: `http://localhost:8000/health`
+Activate the virtual environment.
 
----
+**Windows PowerShell:**
 
-### 3. Frontend Setup
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+**Windows Command Prompt:**
+
+```bat
+.venv\Scripts\activate.bat
+```
+
+Install the Python dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Install the spaCy language model if it is not already installed through the project setup:
+
+```bash
+python -m spacy download en_core_web_sm
+```
+
+Configure your environment variables using the provided `.env.example` template. See the Environment Configuration section below.
+
+Run tests, if configured:
+
+```bash
+python -m pytest tests/ -v
+```
+
+Start the backend from the `backend/` directory:
+
+```bash
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Backend endpoints, when configured as described:
+
+- API: `http://127.0.0.1:8000/api`
+- Swagger documentation: `http://127.0.0.1:8000/docs`
+- Health endpoint: `http://127.0.0.1:8000/health`
+
+### 3. Configure the Frontend
+
+Open a second terminal:
 
 ```bash
 cd frontend
-
-# Install packages
-npm install --ignore-scripts --no-audit --no-fund
-
-# Start Vite development server
+npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser.
+Open the local URL printed by Vite, typically:
+
+`http://localhost:5173`
+
+Ensure the frontend API configuration points to the running backend.
 
 ---
 
-## Environment Variables Reference
+## 🔑 Environment Configuration
 
-Create a `.env` file in the project root or `backend/`:
+Create local environment files based on the provided `.env.example` templates.
+
+Example backend configuration:
 
 ```env
-# MongoDB Database
-MONGODB_URI=mongodb://localhost:27017/criminal_intelligence
+ENVIRONMENT=development
 
-# Neo4j Database
+MONGODB_URI=mongodb://localhost:27017/crimenet
+
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USERNAME=neo4j
-NEO4J_PASSWORD=password
+NEO4J_PASSWORD=replace_with_your_password
 
-# Cloudinary Image Storage
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# Authentication
-JWT_SECRET_KEY=crimenetwork_super_secret_jwt_key_change_in_production_2026
+JWT_SECRET_KEY=replace_with_a_long_random_secret
 JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=480
-
-# Environment
-ENVIRONMENT=development
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
+
+These are example values, not production credentials. Use the exact variable names expected by your implementation.
+
+**Security rules:**
+
+- Never commit `.env` files or real API keys.
+- Use strong, randomly generated secrets.
+- Do not expose backend secrets in frontend environment variables.
+- Restrict database access and use least-privilege credentials.
+- Rotate any secret that has accidentally been published.
 
 ---
 
-## REST API Specifications
+## 📡 API Documentation
 
-### Authentication
-- `POST /api/auth/login` — Authenticate and receive JWT access token.
-- `POST /api/auth/logout` — Revoke token session.
-- `GET /api/auth/me` — Current authenticated user profile.
-- `POST /api/auth/register` — Admin-only investigator creation.
+The backend exposes REST endpoints for authentication, evidence ingestion, entity exploration, graph analysis, alerts, reports, and administrative operations.
 
-### Uploads & Ingestion
-- `POST /api/upload/text` — Direct raw statement / FIR text ingestion.
-- `POST /api/upload/pdf` — PDF investigation report text extraction and ingestion.
-- `POST /api/upload/csv` — CSV call records / CDR processing.
-- `POST /api/upload/json` — JSON intelligence feed ingestion.
-- `POST /api/upload/image` — Evidence image upload to Cloudinary with MongoDB URL index.
-- `GET /api/upload/history` — Ingested documents and media history.
+The following routes describe the intended API surface; verify availability against the actual backend implementation.
 
-### Entities
-- `GET /api/entities` — Search and filter entities (`query`, `type`, `min_risk`, `limit`).
-- `GET /api/entities/{id}` — Retrieve full profile, risk score, and 1-hop associates.
-- `POST /api/entities` — Manually add/update intelligence entity.
+| Module | Example Endpoint | Purpose |
+|---|---|---|
+| Authentication | `POST /api/auth/login` | Authenticate a user |
+| Dashboard | `GET /api/dashboard/stats` | Retrieve dashboard metrics |
+| Entities | `GET /api/entities` | Search entities |
+| Graph | `GET /api/graph/network` | Retrieve graph data |
+| Graph | `GET /api/graph/path` | Explore a connection path |
+| Analytics | `GET /api/graph/analysis` | Retrieve network analysis |
+| Upload | `POST /api/upload/text` | Process text evidence |
+| Upload | `POST /api/upload/pdf` | Process PDF evidence |
+| Alerts | `GET /api/alerts` | Retrieve alerts |
+| Reports | `POST /api/reports/generate` | Generate a PDF report |
 
-### Graph
-- `GET /api/graph/network` — Nodes and edges formatted for React Flow canvas.
-- `GET /api/graph/person/{id}` — 1-hop or 2-hop neighborhood for specific target.
-- `GET /api/graph/path` — Shortest criminal connection path between two entities.
-- `GET /api/graph/analysis` — Centrality metrics, hidden relationships, and communities.
-
-### Alerts
-- `GET /api/alerts` — List suspicious activity alerts (`severity`, `status`).
-- `POST /api/alerts/run-detection` — Execute rule-based detection engine across graph.
-- `PATCH /api/alerts/{id}` — Update alert status (`NEW`, `INVESTIGATING`, `RESOLVED`, `DISMISSED`).
-
-### Reports
-- `POST /api/reports/generate` — Generate and stream formal intelligence PDF dossier.
-- `GET /api/reports` — View generated report audit history.
-
-### Dashboard & Admin
-- `GET /api/dashboard/stats` — Metrics: Total Persons, Relationships, Alerts, Locations, Cases, risk tiers.
-- `GET /api/admin/users` — List registered users (Admin only).
-- `DELETE /api/admin/users/{id}` — Deactivate user (Admin only).
-- `GET /api/admin/audit-logs` — Security audit logs (Admin only).
-- `POST /api/admin/seed-demo` — Reload ShadowNet Syndicate intelligence dataset.
+For available routes, request schemas, and response formats, open the FastAPI Swagger UI at `/docs` while the backend is running.
 
 ---
 
-## Directory Structure
+## 🧪 Testing
 
-```
-criminal-network-analysis/
-├── backend/
-│   ├── app/
-│   │   ├── api/             # FastAPI route controllers
-│   │   │   ├── admin.py
-│   │   │   ├── alerts.py
-│   │   │   ├── auth.py
-│   │   │   ├── dashboard.py
-│   │   │   ├── entities.py
-│   │   │   ├── graph.py
-│   │   │   ├── reports.py
-│   │   │   └── upload.py
-│   │   ├── database/        # Database drivers with fallback resilience
-│   │   │   ├── mongodb.py
-│   │   │   └── neo4j_client.py
-│   │   ├── models/          # Pydantic v2 schemas and validation
-│   │   │   └── schemas.py
-│   │   ├── services/        # Core business logic
-│   │   │   ├── alert_service.py
-│   │   │   ├── auth_service.py
-│   │   │   ├── cloudinary_service.py
-│   │   │   ├── graph_service.py
-│   │   │   ├── network_analysis.py
-│   │   │   ├── nlp_service.py
-│   │   │   └── report_service.py
-│   │   ├── utils/           # Config and logger
-│   │   │   ├── config.py
-│   │   │   └── logger.py
-│   │   └── main.py          # Application entrypoint & lifespan
-│   ├── tests/
-│   │   └── test_backend.py  # Pytest automated test suite
-│   ├── requirements.txt     # Python production dependencies
-│   ├── seed_data.py         # Realistic syndicate dataset seeder
-│   └── .env                 # Local development environment configuration
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── graph/       # Custom React Flow nodes & drawer
-│   │   │   │   ├── CustomNodes.jsx
-│   │   │   │   └── NodeDrawer.jsx
-│   │   │   └── layout/      # Navbar, Sidebar
-│   │   │       ├── Navbar.jsx
-│   │   │       └── Sidebar.jsx
-│   │   ├── context/         # AuthContext & RBAC state
-│   │   │   └── AuthContext.jsx
-│   │   ├── pages/           # 7 Tactical intelligence pages
-│   │   │   ├── AdminManagement.jsx
-│   │   │   ├── AlertCenter.jsx
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── EntityExplorer.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── NetworkGraph.jsx
-│   │   │   ├── ReportGenerator.jsx
-│   │   │   └── UploadCenter.jsx
-│   │   ├── services/        # Axios API client with JWT interceptor
-│   │   │   └── api.js
-│   │   ├── App.jsx          # Protected routing
-│   │   ├── index.css        # Tailwind & graph canvas styles
-│   │   └── main.jsx         # Vite root entry
-│   ├── package.json
-│   ├── vite.config.js
-│   └── tailwind.config.js
-│
-├── data/                    # Sample intelligence datasets
-│   ├── call_records.csv
-│   ├── sample_firs.json
-│   └── sample_fir.pdf
-│
-├── docs/                    # Architecture and API documentation
-├── README.md
-└── .env.example             # Clean environment template
+Run backend tests using:
+
+```bash
+cd backend
+python -m pytest tests/ -v
 ```
 
-#   C r i m i n a l - D e t e c t o r  
- "# Criminal-Detector" 
-"# Criminal-Detector" 
-#   C r i m i n a l - D e t e c t o r  
- #   C r i m i n a l - D e t e c t o r  
- #   C r i m i n a l - D e t e c t o r  
- 
+Run frontend checks using the scripts configured in `frontend/package.json`. For example, if a test script exists:
+
+```bash
+cd frontend
+npm test
+```
+
+Recommended test coverage includes:
+
+- Authentication and authorization.
+- Input validation and file-upload limits.
+- NLP extraction behavior.
+- Graph construction and path finding.
+- Alert rules and risk-score calculations.
+- Database integration and error handling.
+- PDF report generation.
+
+---
+
+## 🔒 Security & Responsible Use
+
+CRIMENET is intended for lawful research, authorized investigative workflows, and academic demonstrations.
+
+- Use only lawfully obtained data.
+- Apply access controls to sensitive records and evidence.
+- Maintain audit logs for sensitive operations.
+- Validate uploaded files and restrict file sizes and formats.
+- Treat automatically extracted entities and relationships as potentially inaccurate.
+- Require human review before acting on generated alerts or risk scores.
+- Avoid treating association, proximity, or graph centrality as evidence of guilt.
+- Use fictional or properly anonymized datasets for public demonstrations.
+- Assess applicable privacy, evidence-handling, and data-protection requirements before deployment.
+
+The system is not a substitute for professional investigation, due process, or legal judgment.
+
+---
+
+## 🔮 Future Enhancements
+
+Potential future development areas include:
+
+- Advanced entity resolution and duplicate detection.
+- Multilingual NLP support.
+- Improved temporal and geospatial network analysis.
+- Explainable alert scoring and provenance tracking.
+- More comprehensive audit and access-control workflows.
+- Containerized deployment and CI/CD automation.
+- Expanded automated testing and performance monitoring.
+
+These items are planned possibilities, not claims that the functionality is already implemented.
+
+---
+
+## 🤝 Contributing
+
+Contributions, suggestions, and bug reports are welcome.
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes.
+4. Run relevant tests.
+5. Submit a pull request with a clear description.
+
+Please do not include private investigative records, credentials, or sensitive personal information in issues or pull requests.
+
+---
+
+## 📄 License
+
+Add your chosen open-source license in the `LICENSE` file before distributing the project. Until a license is specified, do not assume that others have permission to reuse, modify, or redistribute the code.
+
+---
+
+## 👨‍💻 Author
+
+**Nitesh Singh**
+
+Computer Engineering Student | AI & Software Development
+
+GitHub: [@NITESH777RAJPUT](https://github.com/NITESH777RAJPUT)
+
+---
+
+**CRIMENET — Connecting Data. Discovering Relationships. Supporting Investigations.**

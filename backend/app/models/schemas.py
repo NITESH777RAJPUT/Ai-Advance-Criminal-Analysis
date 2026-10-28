@@ -99,6 +99,10 @@ class ExtractedEntity(BaseModel):
     type: EntityType
     confidence: float = 1.0
     risk_score: float = 0.0
+    start_char: Optional[int] = None
+    end_char: Optional[int] = None
+    source_snippet: Optional[str] = None
+    extraction_method: str = "spacy_ner"
     metadata: Dict[str, Any] = Field(default_factory=dict)
     aliases: List[str] = Field(default_factory=list)
 
@@ -112,6 +116,8 @@ class ExtractedRelationship(BaseModel):
     relationship_type: RelationshipType
     confidence: float = 1.0
     evidence: Optional[str] = None
+    source_snippet: Optional[str] = None
+    extraction_method: str = "linguistic_dep"
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 

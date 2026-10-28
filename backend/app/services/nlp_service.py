@@ -65,11 +65,23 @@ class NLPService:
             clean_phone = re.sub(r'[\s\-()]', '', phone_val)
             if len(clean_phone) >= 7 and phone_val.lower() not in seen:
                 seen.add(phone_val.lower())
+                start_c, end_c = match.span()
+                # Find sentence context window
+                snippet_start = max(0, text.rfind('\n', 0, start_c))
+                snippet_end = text.find('\n', end_c)
+                snippet = text[snippet_start:snippet_end if snippet_end != -1 else len(text)].strip()
+                if not snippet:
+                    snippet = text[max(0, start_c - 40):min(len(text), end_c + 40)].strip()
+
                 entities.append(ExtractedEntity(
                     id=f"phone_{clean_phone}",
                     name=phone_val,
                     type=EntityType.PHONE_NUMBER,
                     confidence=0.95,
+                    start_char=start_c,
+                    end_char=end_c,
+                    source_snippet=snippet,
+                    extraction_method="regex_phone",
                     metadata={"raw_match": phone_val}
                 ))
 
@@ -80,11 +92,22 @@ class NLPService:
                 if not val.isdigit() and val.lower() not in ["in", "on", "at"]:
                     seen.add(val.lower())
                     clean_id = re.sub(r'[^a-zA-Z0-9]', '_', val).lower()
+                    start_c, end_c = match.span()
+                    snippet_start = max(0, text.rfind('\n', 0, start_c))
+                    snippet_end = text.find('\n', end_c)
+                    snippet = text[snippet_start:snippet_end if snippet_end != -1 else len(text)].strip()
+                    if not snippet:
+                        snippet = text[max(0, start_c - 40):min(len(text), end_c + 40)].strip()
+
                     entities.append(ExtractedEntity(
                         id=f"veh_{clean_id}",
                         name=val.title(),
                         type=EntityType.VEHICLE,
                         confidence=0.88,
+                        start_char=start_c,
+                        end_char=end_c,
+                        source_snippet=snippet,
+                        extraction_method="regex_vehicle",
                         metadata={"raw_match": val}
                     ))
 
@@ -127,6 +150,10 @@ class NLPService:
                     name=name,
                     type=entity_type,
                     confidence=0.92,
+                    start_char=ent.start_char,
+                    end_char=ent.end_char,
+                    source_snippet=ent.sent.text.strip(),
+                    extraction_method=f"spacy_ner_{ent.label_.lower()}",
                     metadata={"spacy_label": ent.label_}
                 )
                 extracted_entities.append(ent_obj)
@@ -150,6 +177,10 @@ class NLPService:
                         name=name,
                         type=ent_type,
                         confidence=0.85,
+                        start_char=token.idx,
+                        end_char=token.idx + len(token.text),
+                        source_snippet=token.sent.text.strip(),
+                        extraction_method=f"linguistic_dep_{token.dep_}",
                         metadata={"inferred_via": f"pos_{token.pos_}_dep_{token.dep_}"}
                     ))
 
@@ -202,7 +233,9 @@ class NLPService:
                             target_type=target_p.type,
                             relationship_type=detected_relation,
                             confidence=0.88,
-                            evidence=sent_text
+                            evidence=sent_text,
+                            source_snippet=sent_text,
+                            extraction_method=f"dep_relation_{detected_relation.value.lower()}"
                         ))
 
             # Person -> Location (VISITED / LOCATED_AT)
@@ -222,7 +255,9 @@ class NLPService:
                             target_type=loc.type,
                             relationship_type=loc_rel,
                             confidence=0.90,
-                            evidence=sent_text
+                            evidence=sent_text,
+                            source_snippet=sent_text,
+                            extraction_method=f"dep_relation_{loc_rel.value.lower()}"
                         ))
 
             # Person -> Vehicle (OWNS)
@@ -239,7 +274,9 @@ class NLPService:
                             target_type=veh.type,
                             relationship_type=RelationshipType.OWNS,
                             confidence=0.88,
-                            evidence=sent_text
+                            evidence=sent_text,
+                            source_snippet=sent_text,
+                            extraction_method="dep_relation_owns_vehicle"
                         ))
 
             # Person -> Phone Number (CALLED or OWNS)
@@ -257,7 +294,9 @@ class NLPService:
                             target_type=ph.type,
                             relationship_type=ph_rel,
                             confidence=0.92,
-                            evidence=sent_text
+                            evidence=sent_text,
+                            source_snippet=sent_text,
+                            extraction_method=f"dep_relation_{ph_rel.value.lower()}_phone"
                         ))
 
             # Person -> Organization (WORKS_FOR / ASSOCIATED_WITH)
@@ -275,7 +314,9 @@ class NLPService:
                             target_type=org.type,
                             relationship_type=org_rel,
                             confidence=0.86,
-                            evidence=sent_text
+                            evidence=sent_text,
+                            source_snippet=sent_text,
+                            extraction_method=f"dep_relation_{org_rel.value.lower()}_org"
                         ))
 
         summary_str = (

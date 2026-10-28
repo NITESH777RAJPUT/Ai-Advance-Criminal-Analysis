@@ -48,6 +48,10 @@ class GraphService:
                 "type": type_val,
                 "confidence": ent.confidence,
                 "risk_score": ent.risk_score,
+                "start_char": ent.start_char,
+                "end_char": ent.end_char,
+                "source_snippet": ent.source_snippet,
+                "extraction_method": ent.extraction_method,
                 "last_seen_case": case_id or "Direct Input",
                 "source_name": source_name or "Report",
                 "updated_at": datetime.now(timezone.utc).isoformat()
@@ -74,6 +78,8 @@ class GraphService:
             edge_props = {
                 "confidence": rel.confidence,
                 "evidence": rel.evidence or f"Mentioned in {source_name or 'case'}",
+                "source_snippet": rel.source_snippet,
+                "extraction_method": rel.extraction_method,
                 "case_id": case_id,
                 "source_document": source_name or case_id or "Investigation File",
                 "frequency": rel.metadata.get("frequency", 1) if (hasattr(rel, "metadata") and rel.metadata) else 1,
